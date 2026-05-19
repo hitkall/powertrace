@@ -39,7 +39,7 @@ CAUSAL CHAIN
 
 IMPACT
   Duration: 107 seconds
-  Est. cost: $847
+  Est. cost: $0.35  (--gpu-rate 11.57 × 107s)
   Root cause: PDU-B voltage sag on rack-14
 ```
 
@@ -149,8 +149,11 @@ python correlate.py \
   --lag 60 \          # max correlation lag in seconds (default: 60)
   --baseline 600 \    # baseline lookback window in seconds (default: 600)
   --confidence 0.6 \  # minimum confidence threshold to report (default: 0.6)
-  --output timeline   # output format: timeline | json | markdown
+  --output timeline \ # output format: timeline | json | markdown
+  --gpu-rate 3.50     # optional: GPU cost in USD/hr — enables cost impact estimate
 ```
+
+`--gpu-rate` is intentionally optional. Without it, `Est. cost` shows `null` rather than printing a confident-looking wrong number. GPU pricing varies enormously (on-demand vs reserved vs spot vs owned hardware), so PowerTrace requires you to supply the rate explicitly. Pass the on-demand hourly price for your instance type — e.g. `--gpu-rate 3.50` for a p3.2xlarge or `--gpu-rate 11.57` for a p4d.24xlarge.
 
 ---
 
@@ -181,11 +184,12 @@ python correlate.py \
 ## Roadmap
 
 - [x] Correlation CLI with simulated inputs
+- [x] AWS Health Events receiver (boto3 — Python)
+- [x] CloudWatch metrics receiver (boto3 — Python)
+- [x] Grafana dashboard (unified physical + trace timeline, Prometheus + Tempo)
 - [ ] NVML receiver (pynvml — Python)
-- [ ] AWS Health Events receiver (boto3 — Python)
 - [ ] OTel Collector receiver for PDU SNMP (Go)
 - [ ] OTel Collector receiver for Redfish (Go)
-- [ ] Grafana dashboard template (unified physical + trace timeline)
 - [ ] Predictive alerting (power budget trending before threshold breach)
 - [ ] Proposed OTel semantic convention for physical infrastructure attributes
 
