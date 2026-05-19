@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape the OTel Collector's Prometheus exporter
+  - job_name: powertrace-metrics
+    static_configs:
+      - targets: ["otel-collector:8889"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: powertrace-collector
+
+  # Self-scrape Prometheus
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

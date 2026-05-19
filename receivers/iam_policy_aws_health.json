@@ -1,0 +1,27 @@
+{
+  "_comment": [
+    "Minimal IAM policy for the PowerTrace AWS Health receiver.",
+    "",
+    "AWS Health API actions do not support resource-level restrictions or",
+    "condition keys — Resource must be '*' for all three actions. This is",
+    "a documented AWS constraint, not a gap in this policy.",
+    "",
+    "Attach this policy to an IAM role assumed by the machine running",
+    "receivers/aws_health.py. No other permissions are required.",
+    "",
+    "Ref: https://docs.aws.amazon.com/health/latest/ug/security_iam_service-with-iam.html"
+  ],
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PowerTraceHealthReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "health:DescribeEvents",
+        "health:DescribeEventDetails",
+        "health:DescribeAffectedEntities"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

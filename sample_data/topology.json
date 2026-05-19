@@ -1,0 +1,25 @@
+{
+  "mappings": [
+    {
+      "physical_device_id": "PDU-B-rack-14",
+      "rack_id": "rack-14",
+      "feeds": ["server-rack-14-node-3", "server-rack-14-node-4"]
+    },
+    {
+      "physical_device_id": "server-rack-14-node-3",
+      "asset_tag": "SRV-2847",
+      "ip_address": "10.0.1.47",
+      "cloud_instance_id": "i-0abc123def456",
+      "gpus": ["GPU-0", "GPU-1", "GPU-2", "GPU-3", "GPU-4", "GPU-5", "GPU-6", "GPU-7"],
+      "kubernetes_node": "k8s-node-gpu-03",
+      "services": ["llama-inference-api", "embedding-service"]
+    },
+    {
+      "physical_device_id": "GPU-0",
+      "parent_device_id": "server-rack-14-node-3",
+      "gpu_index": 0,
+      "gpu_uuid": "GPU-abc123",
+      "services": ["llama-inference-api"]
+    }
+  ]
+}

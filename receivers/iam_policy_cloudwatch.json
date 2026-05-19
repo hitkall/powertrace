@@ -1,0 +1,32 @@
+{
+  "_comment": [
+    "Minimal IAM policy for the PowerTrace CloudWatch receiver.",
+    "",
+    "cloudwatch:GetMetricStatistics is the only action required.",
+    "The cloudwatch:namespace condition key restricts this permission",
+    "to the AWS/EC2 namespace only — the receiver never reads metrics",
+    "from other namespaces (RDS, Lambda, etc.).",
+    "",
+    "Resource must be '*' — CloudWatch metric actions do not support",
+    "resource-level restrictions by ARN.",
+    "",
+    "Attach to an IAM role assumed by the machine running",
+    "receivers/cloudwatch.py. No other permissions are required.",
+    "",
+    "Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/iam-identity-based-access-control-cw.html"
+  ],
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PowerTraceCloudWatchEC2ReadOnly",
+      "Effect": "Allow",
+      "Action": "cloudwatch:GetMetricStatistics",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "cloudwatch:namespace": "AWS/EC2"
+        }
+      }
+    }
+  ]
+}

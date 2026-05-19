@@ -1,0 +1,101 @@
+{
+  "service_metrics": [
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:31:50.000Z",
+      "p50_latency_ms": 215,
+      "p95_latency_ms": 390,
+      "p99_latency_ms": 530,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 140,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:32:00.000Z",
+      "p50_latency_ms": 215,
+      "p95_latency_ms": 390,
+      "p99_latency_ms": 530,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 140,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:32:11.000Z",
+      "p50_latency_ms": 890,
+      "p95_latency_ms": 1650,
+      "p99_latency_ms": 2100,
+      "error_rate_percent": 4.3,
+      "throughput_rps": 61,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:32:20.000Z",
+      "p50_latency_ms": 920,
+      "p95_latency_ms": 1700,
+      "p99_latency_ms": 2250,
+      "error_rate_percent": 5.1,
+      "throughput_rps": 55,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:32:40.000Z",
+      "p50_latency_ms": 910,
+      "p95_latency_ms": 1680,
+      "p99_latency_ms": 2180,
+      "error_rate_percent": 5.0,
+      "throughput_rps": 57,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:33:00.000Z",
+      "p50_latency_ms": 820,
+      "p95_latency_ms": 1520,
+      "p99_latency_ms": 1950,
+      "error_rate_percent": 4.2,
+      "throughput_rps": 66,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:33:20.000Z",
+      "p50_latency_ms": 640,
+      "p95_latency_ms": 1200,
+      "p99_latency_ms": 1580,
+      "error_rate_percent": 2.8,
+      "throughput_rps": 89,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:33:48.000Z",
+      "p50_latency_ms": 420,
+      "p95_latency_ms": 780,
+      "p99_latency_ms": 1090,
+      "error_rate_percent": 1.1,
+      "throughput_rps": 118,
+      "node_id": "i-0abc123def456"
+    }
+  ],
+  "spans": [
+    {
+      "trace_id": "abc123def456",
+      "span_id": "span_001",
+      "service_name": "llama-inference-api",
+      "operation": "generate_tokens",
+      "start_time": "2024-01-15T14:32:11.000Z",
+      "duration_ms": 2100,
+      "status": "ok",
+      "attributes": {
+        "http.status_code": 200,
+        "gpu.id": "GPU-0",
+        "node.id": "i-0abc123def456",
+        "model.name": "llama-2-70b"
+      }
+    }
+  ]
+}

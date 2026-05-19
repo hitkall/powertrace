@@ -1,0 +1,76 @@
+{
+  "events": [
+    {
+      "id": "evt_001",
+      "timestamp": "2024-01-15T14:32:01.000Z",
+      "source": "pdu_snmp",
+      "type": "voltage_sag",
+      "severity": "critical",
+      "device_id": "PDU-B-rack-14",
+      "raw_message": "PDU-B input voltage below threshold",
+      "metadata": {
+        "voltage_volts": 108.2,
+        "threshold_volts": 110.0,
+        "outlet_id": "14B",
+        "rack_id": "rack-14"
+      }
+    },
+    {
+      "id": "evt_002",
+      "timestamp": "2024-01-15T14:32:02.000Z",
+      "source": "redfish",
+      "type": "psu_failover",
+      "severity": "critical",
+      "device_id": "server-rack-14-node-3",
+      "raw_message": "PSU failover from feed B to feed A",
+      "metadata": {
+        "failed_psu": "PSU-B",
+        "active_psu": "PSU-A",
+        "server_asset_tag": "SRV-2847"
+      }
+    },
+    {
+      "id": "evt_003",
+      "timestamp": "2024-01-15T14:32:03.000Z",
+      "source": "rapl",
+      "type": "cpu_power_cap",
+      "severity": "medium",
+      "device_id": "server-rack-14-node-3",
+      "raw_message": "RAPL CPU power cap applied by BMC",
+      "metadata": {
+        "power_cap_watts": 180,
+        "previous_power_cap_watts": 280,
+        "package_id": 0
+      }
+    },
+    {
+      "id": "evt_004",
+      "timestamp": "2024-01-15T14:32:04.000Z",
+      "source": "nvml",
+      "type": "thermal_throttle",
+      "severity": "high",
+      "device_id": "GPU-0",
+      "raw_message": "GPU thermal throttle applied",
+      "metadata": {
+        "temperature_celsius": 82,
+        "throttle_reason": "thermal",
+        "power_cap_watts": 250,
+        "previous_power_cap_watts": 400
+      }
+    },
+    {
+      "id": "evt_005",
+      "timestamp": "2024-01-15T14:32:07.000Z",
+      "source": "nvml",
+      "type": "power_cap_applied",
+      "severity": "high",
+      "device_id": "GPU-0",
+      "raw_message": "GPU power cap reduced",
+      "metadata": {
+        "power_cap_watts": 250,
+        "previous_power_cap_watts": 400,
+        "utilization_percent": 94
+      }
+    }
+  ]
+}
