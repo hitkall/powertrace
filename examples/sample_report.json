@@ -1,109 +1,109 @@
 {
-  "report": {
-    "generated_at": "2026-06-10T01:49:05Z",
-    "incidents": [
-      {
-        "id": "inc_387",
-        "window_start": "2024-01-15T14:32:01.000Z",
-        "window_end": "2024-01-15T14:33:48.000Z",
-        "duration_seconds": 107.0,
-        "overall_confidence": 0.89,
-        "low_confidence": false,
-        "affected_services": [
-          "llama-inference-api"
+    "report": {
+        "generated_at": "2026-06-10T03:12:12Z",
+        "incidents": [
+            {
+                "id": "inc_276",
+                "window_start": "2024-01-15T14:32:01.000Z",
+                "window_end": "2024-01-15T14:33:48.000Z",
+                "duration_seconds": 107.0,
+                "overall_confidence": 0.89,
+                "low_confidence": false,
+                "affected_services": [
+                    "llama-inference-api"
+                ],
+                "causal_chain": [
+                    {
+                        "event_id": "evt_001",
+                        "timestamp": "2024-01-15T14:32:01.000Z",
+                        "source": "pdu_snmp",
+                        "type": "voltage_sag",
+                        "device_id": "PDU-B-rack-14",
+                        "caused_by": null,
+                        "confidence": null,
+                        "lag_seconds": 10.0,
+                        "indirect_causality": false
+                    },
+                    {
+                        "event_id": "evt_002",
+                        "timestamp": "2024-01-15T14:32:02.000Z",
+                        "source": "redfish",
+                        "type": "psu_failover",
+                        "device_id": "server-rack-14-node-3",
+                        "caused_by": "evt_001",
+                        "confidence": 0.891,
+                        "lag_seconds": 1.0,
+                        "indirect_causality": false
+                    },
+                    {
+                        "event_id": "evt_003",
+                        "timestamp": "2024-01-15T14:32:03.000Z",
+                        "source": "rapl",
+                        "type": "cpu_power_cap",
+                        "device_id": "server-rack-14-node-3",
+                        "caused_by": "evt_002",
+                        "confidence": 0.872,
+                        "lag_seconds": 1.0,
+                        "indirect_causality": false
+                    },
+                    {
+                        "event_id": "evt_004",
+                        "timestamp": "2024-01-15T14:32:04.000Z",
+                        "source": "nvml",
+                        "type": "thermal_throttle",
+                        "device_id": "GPU-0",
+                        "caused_by": "evt_003",
+                        "confidence": 0.893,
+                        "lag_seconds": 1.0,
+                        "indirect_causality": false
+                    },
+                    {
+                        "event_id": "evt_005",
+                        "timestamp": "2024-01-15T14:32:07.000Z",
+                        "source": "nvml",
+                        "type": "power_cap_applied",
+                        "device_id": "GPU-0",
+                        "caused_by": "evt_004",
+                        "confidence": 0.896,
+                        "lag_seconds": 3.0,
+                        "indirect_causality": false
+                    },
+                    {
+                        "event_id": "trace_impact_llama-inference-api",
+                        "timestamp": "2024-01-15T14:32:11.000Z",
+                        "source": "otel_traces",
+                        "type": "trace_degradation",
+                        "device_id": "llama-inference-api",
+                        "caused_by": "evt_005",
+                        "confidence": 0.89,
+                        "lag_seconds": 0.0,
+                        "indirect_causality": false
+                    }
+                ],
+                "impact": {
+                    "p99_baseline_ms": 528.0,
+                    "p99_peak_ms": 2250.0,
+                    "p99_change_percent": 326.1,
+                    "p99_first_anomaly_ms": 2100.0,
+                    "p99_first_change_percent": 297.7,
+                    "error_rate_baseline_percent": 0.1,
+                    "error_rate_peak_percent": 5.1,
+                    "error_rate_first_anomaly_percent": 4.3,
+                    "throughput_baseline_rps": 141.0,
+                    "throughput_peak_rps": 55.0,
+                    "throughput_first_anomaly_rps": 61.0,
+                    "throughput_first_change_percent": -56.7,
+                    "estimated_cost_impact_usd": null
+                },
+                "warnings": [],
+                "unmapped_devices": []
+            }
         ],
-        "causal_chain": [
-          {
-            "event_id": "evt_001",
-            "timestamp": "2024-01-15T14:32:01.000Z",
-            "source": "pdu_snmp",
-            "type": "voltage_sag",
-            "device_id": "PDU-B-rack-14",
-            "caused_by": null,
-            "confidence": null,
-            "lag_seconds": 10.0,
-            "indirect_causality": false
-          },
-          {
-            "event_id": "evt_002",
-            "timestamp": "2024-01-15T14:32:02.000Z",
-            "source": "redfish",
-            "type": "psu_failover",
-            "device_id": "server-rack-14-node-3",
-            "caused_by": "evt_001",
-            "confidence": 0.891,
-            "lag_seconds": 1.0,
-            "indirect_causality": false
-          },
-          {
-            "event_id": "evt_003",
-            "timestamp": "2024-01-15T14:32:03.000Z",
-            "source": "rapl",
-            "type": "cpu_power_cap",
-            "device_id": "server-rack-14-node-3",
-            "caused_by": "evt_002",
-            "confidence": 0.872,
-            "lag_seconds": 1.0,
-            "indirect_causality": false
-          },
-          {
-            "event_id": "evt_004",
-            "timestamp": "2024-01-15T14:32:04.000Z",
-            "source": "nvml",
-            "type": "thermal_throttle",
-            "device_id": "GPU-0",
-            "caused_by": "evt_003",
-            "confidence": 0.893,
-            "lag_seconds": 1.0,
-            "indirect_causality": false
-          },
-          {
-            "event_id": "evt_005",
-            "timestamp": "2024-01-15T14:32:07.000Z",
-            "source": "nvml",
-            "type": "power_cap_applied",
-            "device_id": "GPU-0",
-            "caused_by": "evt_004",
-            "confidence": 0.896,
-            "lag_seconds": 3.0,
-            "indirect_causality": false
-          },
-          {
-            "event_id": "trace_impact_llama-inference-api",
-            "timestamp": "2024-01-15T14:32:11.000Z",
-            "source": "otel_traces",
-            "type": "trace_degradation",
-            "device_id": "llama-inference-api",
-            "caused_by": "evt_005",
-            "confidence": 0.89,
-            "lag_seconds": 0.0,
-            "indirect_causality": false
-          }
-        ],
-        "impact": {
-          "p99_baseline_ms": 528.0,
-          "p99_peak_ms": 2250.0,
-          "p99_change_percent": 326.1,
-          "p99_first_anomaly_ms": 2100.0,
-          "p99_first_change_percent": 297.7,
-          "error_rate_baseline_percent": 0.1,
-          "error_rate_peak_percent": 5.1,
-          "error_rate_first_anomaly_percent": 4.3,
-          "throughput_baseline_rps": 141.0,
-          "throughput_peak_rps": 55.0,
-          "throughput_first_anomaly_rps": 61.0,
-          "throughput_first_change_percent": -56.7,
-          "estimated_cost_impact_usd": null
-        },
-        "warnings": [],
-        "unmapped_devices": []
-      }
-    ],
-    "summary": {
-      "total_events_processed": 5,
-      "total_incidents_detected": 1,
-      "total_unmapped_devices": 0,
-      "total_warnings": 0
+        "summary": {
+            "total_events_processed": 5,
+            "total_incidents_detected": 1,
+            "total_unmapped_devices": 0,
+            "total_warnings": 0
+        }
     }
-  }
 }
