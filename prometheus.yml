@@ -2,6 +2,15 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+storage:
+  tsdb:
+    # export_to_otel.py shifts sample timestamps so the incident lands in the
+    # recent past; re-running the export writes points older than the previous
+    # run's newest sample. Without this window Prometheus rejects those
+    # remote-write samples as out-of-order ("out of bounds") and the demo
+    # silently loses baseline data on re-runs.
+    out_of_order_time_window: 12h
+
 scrape_configs:
   # Scrape the OTel Collector's Prometheus exporter
   - job_name: powertrace-metrics
