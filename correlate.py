@@ -8,7 +8,7 @@ import json
 import logging
 import sys
 from datetime import datetime, timezone
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -19,18 +19,18 @@ log = logging.getLogger("powertrace")
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
-SEVERITY_RANK: Dict[str, int] = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+SEVERITY_RANK: dict[str, int] = {"critical": 4, "high": 3, "medium": 2, "low": 1}
 PHYSICAL_SOURCES = {"pdu_snmp", "redfish", "poe_snmp", "ups"}
 
 # Case 8: tie-breaking rule — physical-layer sources sort before software sources at equal
 # timestamps. Documented here so it's traceable when causal chains are reviewed.
-_SOURCE_PRIORITY: Dict[str, int] = {src: 0 for src in PHYSICAL_SOURCES}
+_SOURCE_PRIORITY: dict[str, int] = {src: 0 for src in PHYSICAL_SOURCES}
 
 # Case 7: lag threshold above which indirect causality is flagged
 LONG_LAG_SECONDS = 30.0
 
 # Human-readable display names for terminal output (type field → label)
-EVENT_TYPE_DISPLAY: Dict[str, str] = {
+EVENT_TYPE_DISPLAY: dict[str, str] = {
     "host_degradation":   "Host degradation",
     "thermal_throttle":   "GPU thermal throttle",
     "power_cap_applied":  "GPU power cap applied",
@@ -71,11 +71,11 @@ def _parse_tz_timestamp(v: object, field_name: str = "timestamp") -> datetime:
     normalized = v.replace("Z", "+00:00")
     try:
         dt = datetime.fromisoformat(normalized)
-    except ValueError:
+    except ValueError as exc:
         raise ValueError(
             f"Invalid {field_name} {v!r}: not a valid ISO 8601 datetime. "
             f"Expected format: '2024-01-15T14:32:01Z' or '2024-01-15T14:32:01+00:00'."
-        )
+        ) from exc
 
     if dt.tzinfo is None:
         raise ValueError(
@@ -123,7 +123,7 @@ class InfraEvent(BaseModel):
 
 
 class EventsFile(BaseModel):
-    events: List[InfraEvent]
+    events: list[InfraEvent]
 
 
 class ServiceMetric(BaseModel):
@@ -159,8 +159,8 @@ class Span(BaseModel):
 
 
 class TracesFile(BaseModel):
-    service_metrics: List[ServiceMetric]
-    spans: List[Span] = Field(default_factory=list)
+    service_metrics: list[ServiceMetric]
+    spans: list[Span] = Field(default_factory=list)
 
 
 class TopologyMapping(BaseModel):
@@ -168,9 +168,9 @@ class TopologyMapping(BaseModel):
     rack_id: Optional[str] = None
     cloud_instance_id: Optional[str] = None
     kubernetes_node: Optional[str] = None
-    gpus: Optional[List[str]] = None
-    services: Optional[List[str]] = None
-    feeds: Optional[List[str]] = None
+    gpus: Optional[list[str]] = None
+    services: Optional[list[str]] = None
+    feeds: Optional[list[str]] = None
     parent_device_id: Optional[str] = None
     asset_tag: Optional[str] = None
     ip_address: Optional[str] = None
@@ -216,18 +216,18 @@ class Incident(BaseModel):
     window_end: datetime
     duration_seconds: float
     overall_confidence: float
-    affected_services: List[str]
-    causal_chain: List[CausalChainEvent]
+    affected_services: list[str]
+    causal_chain: list[CausalChainEvent]
     impact: ImpactSummary
-    warnings: List[str] = Field(default_factory=list)
-    unmapped_devices: List[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    unmapped_devices: list[str] = Field(default_factory=list)
     # Case 4: always emitted; consumers use this flag rather than confidence being hidden
     low_confidence: bool = False
 
 
 class CorrelationReport(BaseModel):
     generated_at: datetime
-    incidents: List[Incident]
+    incidents: list[Incident]
     total_events_processed: int
     total_incidents_detected: int
     total_unmapped_devices: int
@@ -261,7 +261,7 @@ def load_json_file(path: str) -> dict:
     return data
 
 
-def parse_events(data: dict) -> List[InfraEvent]:
+def parse_events(data: dict) -> list[InfraEvent]:
     # Use `or []` so that an explicit null value ("events": null) is treated as empty
     raw_list = data.get("events") or []
     parsed = []
@@ -276,7 +276,7 @@ def parse_events(data: dict) -> List[InfraEvent]:
 
 
 def parse_traces(data: dict) -> TracesFile:
-    metrics: List[ServiceMetric] = []
+    metrics: list[ServiceMetric] = []
     for raw in (data.get("service_metrics") or []):
         try:
             metrics.append(ServiceMetric.model_validate(raw))
@@ -285,7 +285,7 @@ def parse_traces(data: dict) -> TracesFile:
         except Exception as e:
             log.warning("Skipping service_metric (unexpected error): %s | raw: %s", e, raw)
 
-    spans: List[Span] = []
+    spans: list[Span] = []
     for raw in (data.get("spans") or []):
         try:
             spans.append(Span.model_validate(raw))
@@ -297,7 +297,7 @@ def parse_traces(data: dict) -> TracesFile:
     return TracesFile(service_metrics=metrics, spans=spans)
 
 
-def parse_topology(data: dict) -> List[TopologyMapping]:
+def parse_topology(data: dict) -> list[TopologyMapping]:
     parsed = []
     for raw in (data.get("mappings") or []):
         try:
@@ -311,13 +311,13 @@ def parse_topology(data: dict) -> List[TopologyMapping]:
 
 # ── Layer 2: Topology index and baseline calculator ────────────────────────────
 
-def build_topology_index(mappings: List[TopologyMapping]) -> Dict[str, List[str]]:
+def build_topology_index(mappings: list[TopologyMapping]) -> dict[str, list[str]]:
     """
     Builds device_id → [service_names] index. Resolves transitive chains:
     PDU feeds servers → servers run services → PDU also covers those services.
     """
-    device_services: Dict[str, List[str]] = {}
-    device_feeds: Dict[str, List[str]] = {}
+    device_services: dict[str, list[str]] = {}
+    device_feeds: dict[str, list[str]] = {}
 
     for m in mappings:
         did = m.physical_device_id
@@ -352,11 +352,11 @@ def build_topology_index(mappings: List[TopologyMapping]) -> Dict[str, List[str]
 
 
 def calculate_baseline(
-    metrics: List[ServiceMetric],
+    metrics: list[ServiceMetric],
     service_name: str,
     window_start: datetime,
     lookback_seconds: float,
-) -> Optional[Dict]:
+) -> Optional[dict]:
     """
     Rolling average baseline from data BEFORE window_start.
 
@@ -396,10 +396,10 @@ def calculate_baseline(
 # ── Layer 3: Anomaly detector ──────────────────────────────────────────────────
 
 def detect_anomaly_windows(
-    metrics: List[ServiceMetric],
+    metrics: list[ServiceMetric],
     baseline_lookback: float,
     gap_tolerance_seconds: float = 30.0,
-) -> Tuple[List[Dict], List[str]]:
+) -> tuple[list[dict], list[str]]:
     """
     Detects windows where P99 or error_rate exceeds 2x baseline.
     Returns (windows, skip_warnings).
@@ -408,12 +408,12 @@ def detect_anomaly_windows(
     Uses a LOCKED baseline per service (computed once from the first clean pre-window
     period) to prevent anomaly data from contaminating the baseline during recovery.
     """
-    by_service: Dict[str, List[ServiceMetric]] = {}
+    by_service: dict[str, list[ServiceMetric]] = {}
     for m in metrics:
         by_service.setdefault(m.service_name, []).append(m)
 
-    windows: List[Dict] = []
-    skip_warnings: List[str] = []
+    windows: list[dict] = []
+    skip_warnings: list[str] = []
 
     for service, svc_metrics in by_service.items():
         svc_sorted = sorted(svc_metrics, key=lambda m: m.timestamp)
@@ -459,7 +459,7 @@ def detect_anomaly_windows(
         p99_base = locked_baseline["p99"]
         err_base = locked_baseline["error_rate"]
 
-        anomaly_points: List[Dict] = []
+        anomaly_points: list[dict] = []
         for m in svc_sorted:
             if m.timestamp.timestamp() < baseline_compare_from_ts:
                 continue  # skip points that precede the first usable baseline window
@@ -478,7 +478,7 @@ def detect_anomaly_windows(
             continue
 
         # Group consecutive anomalous points into contiguous windows
-        groups: List[List[Dict]] = [[anomaly_points[0]]]
+        groups: list[list[dict]] = [[anomaly_points[0]]]
         for ap in anomaly_points[1:]:
             prev_ts = groups[-1][-1]["metric"].timestamp.timestamp()
             curr_ts = ap["metric"].timestamp.timestamp()
@@ -514,10 +514,10 @@ def _edge_confidence(
     evt: InfraEvent,
     prev_evt: Optional[InfraEvent],
     service: str,
-    topology_index: Dict[str, List[str]],
+    topology_index: dict[str, list[str]],
     anomaly_start_ts: float,
     max_lag: float,
-) -> Tuple[float, bool]:
+) -> tuple[float, bool]:
     """
     Scores a single edge in the causal chain using an additive penalty model.
     Returns (score, indirect_causality).
@@ -567,9 +567,9 @@ def _edge_confidence(
 
 
 def build_causal_chain(
-    events: List[InfraEvent],
-    anomaly_window: Dict,
-    topology_index: Dict[str, List[str]],
+    events: list[InfraEvent],
+    anomaly_window: dict,
+    topology_index: dict[str, list[str]],
     max_lag: float,
     correlation_window: float,
     min_confidence: float,
@@ -594,9 +594,9 @@ def build_causal_chain(
     if not candidate_events:
         return None
 
-    related_events: List[InfraEvent] = []
-    unmapped_device_ids: List[str] = []
-    warnings: List[str] = []
+    related_events: list[InfraEvent] = []
+    unmapped_device_ids: list[str] = []
+    warnings: list[str] = []
 
     for evt in candidate_events:
         svc_list = topology_index.get(evt.device_id, [])
@@ -619,8 +619,8 @@ def build_causal_chain(
     related_events.sort(key=lambda e: (e.timestamp, _source_priority(e.source)))
 
     # Score each edge
-    edge_scores: List[float] = []
-    indirect_flags: List[bool] = []
+    edge_scores: list[float] = []
+    indirect_flags: list[bool] = []
     prev: Optional[InfraEvent] = None
     for evt in related_events:
         score, indirect = _edge_confidence(
@@ -635,7 +635,7 @@ def build_causal_chain(
     )
 
     # Build CausalChainEvent list
-    chain: List[CausalChainEvent] = []
+    chain: list[CausalChainEvent] = []
     prev_id: Optional[str] = None
 
     for i, (evt, edge_score, indirect) in enumerate(
@@ -778,7 +778,7 @@ def _severity_label(severity: Optional[str]) -> str:
 
 
 def render_timeline(report: CorrelationReport, min_confidence: float) -> str:
-    lines: List[str] = []
+    lines: list[str] = []
     sep = "═" * 62
 
     lines += [
@@ -919,7 +919,7 @@ def render_json(report: CorrelationReport) -> str:
 
 
 def render_markdown(report: CorrelationReport, min_confidence: float) -> str:
-    lines: List[str] = [
+    lines: list[str] = [
         "# PowerTrace Correlation Report",
         f"\n**Generated:** `{report.generated_at.strftime('%Y-%m-%dT%H:%M:%SZ')}`\n",
     ]
@@ -1087,7 +1087,7 @@ def main() -> None:
 
     # ── Layer 4: Causal chains ─────────────────────────────────────────────────
 
-    global_warnings: List[str] = list(skip_warnings)
+    global_warnings: list[str] = list(skip_warnings)
 
     # Case 6: flag overlapping anomaly windows per service; never merge automatically
     for i, w1 in enumerate(anomaly_windows):
@@ -1104,7 +1104,7 @@ def main() -> None:
                     f"Not merged — review each window independently."
                 )
 
-    incidents: List[Incident] = []
+    incidents: list[Incident] = []
     for window in anomaly_windows:
         incident = build_causal_chain(
             events=events,
@@ -1138,7 +1138,7 @@ def main() -> None:
                 inc2.warnings.append(msg)
 
     all_unmapped: set = set(globally_unmapped)
-    all_warnings: List[str] = list(global_warnings)
+    all_warnings: list[str] = list(global_warnings)
     for inc in incidents:
         all_unmapped.update(inc.unmapped_devices)
         all_warnings.extend(inc.warnings)

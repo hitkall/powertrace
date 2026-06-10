@@ -434,7 +434,7 @@ def cmd_simulate(args) -> None:
     traces_path   = Path(args.traces)
     topology_path = Path(args.topology)
 
-    for label, path in [
+    for _label, path in [
         ("Events",   events_path),
         ("Traces",   traces_path),
         ("Topology", topology_path),

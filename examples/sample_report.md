@@ -1,6 +1,6 @@
 # PowerTrace Correlation Report
 
-**Generated:** `2026-06-10T01:18:42Z`
+**Generated:** `2026-06-10T01:49:06Z`
 
 ## Incident: llama-inference-api
 
@@ -32,4 +32,10 @@ no |
 ---
 **Summary:** 1 incident(s) | 5 events processed | 0 unmapped device(s) | 0 
 warning(s)
+
+─────────────────────────────────── Summary ────────────────────────────────────
+  Events collected      5     
+  Metric datapoints     14    
+  Incidents detected    1     
+  Time taken            0.0s  
 

@@ -3,67 +3,80 @@
 **Connecting infrastructure signals to application observability — so you know exactly why your AI workload broke.**
 
 [![CI](https://github.com/hitkall/powertrace/actions/workflows/ci.yml/badge.svg)](https://github.com/hitkall/powertrace/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-aligned-blueviolet.svg)](docs/OTEL_POSITIONING.md)
 
 ---
 
 ## What PowerTrace Is
 
-PowerTrace is an **OTel-aligned correlation engine** that connects infrastructure events (AWS Health, CloudWatch anomalies, PDU power events, GPU thermals) to application trace degradation — producing a unified causal timeline with confidence scoring.
+PowerTrace is an OTel-aligned correlation engine that connects infrastructure events and application trace degradation into a causal timeline.
 
-It exports results via OTLP to any standard OTel Collector endpoint, and includes a local demo stack with Grafana, Prometheus, and Tempo.
-
----
+Today, PowerTrace runs as a Python correlation engine with an OTLP export path into a local Grafana / Prometheus / Tempo / OpenTelemetry Collector stack. It is not yet a native OpenTelemetry Collector receiver, processor, or connector.
 
 ## Current Status
 
 ### Working Today
-- Python correlation CLI (`main.py simulate` / `run` / `correlate`)
-- Sample incident simulation — runs from a clean clone with no AWS credentials or Docker
-- Infrastructure event + trace degradation correlation
-- Topology-aware causal chain ranking with confidence scoring
-- AWS Health receiver prototype (boto3)
-- CloudWatch receiver prototype (boto3)
-- OTLP export path into a local Grafana / Prometheus / Tempo / OTel Collector stack
-- 63 unit tests covering the correlation engine, CLI, and export layer
-- GitHub Actions CI on Python 3.11 and 3.12
+
+- Python correlation CLI
+- Sample incident simulation
+- Infrastructure event and trace degradation correlation
+- Topology-aware causal chain ranking
+- Confidence scoring
+- AWS Health receiver prototype
+- CloudWatch receiver prototype
+- OTLP export into a local Grafana / Prometheus / Tempo / OpenTelemetry Collector stack
 
 ### Prototype
-- AWS Health event mapping and affected-entity enrichment (`receivers/aws_health.py`)
-- CloudWatch infrastructure signal ingestion (`receivers/cloudwatch.py`)
-- Local Grafana observability demo with provisioned dashboards and annotations
+
+- AWS Health event mapping and affected-entity enrichment
+- CloudWatch infrastructure signal ingestion
+- Local Grafana observability demo
+- Sample report generation
 
 ### Planned
-- Native OpenTelemetry Collector receiver / processor (Go) — see [docs/OTEL_POSITIONING.md](docs/OTEL_POSITIONING.md)
+
+- Native OpenTelemetry Collector receiver / processor / connector
 - NVML / DCGM live GPU receiver
-- SNMP / Redfish on-prem receiver
-- RAPL CPU power cap receiver
-- Azure Resource Health / GCP Instance Health receivers
+- SNMP / Redfish receiver
+- RAPL support
+- Azure / GCP health event receivers
 - Production validation on real GPU clusters
+
+---
+
+## Why This Matters
+
+When an AI training job slows down or crashes, two separate teams start investigating simultaneously. The **infrastructure team** looks at CloudWatch, AWS Health Events, or physical power dashboards. The **SRE / platform team** looks at APM traces, error rates, and GPU metrics. Neither team can see what the other sees.
+
+A power fluctuation that caused a GPU to thermal throttle, which caused a training job to lose a checkpoint, gets discovered in a post-mortem — not in real time. For teams running large GPU clusters, this is expensive: a single interrupted training run on a p4d.24xlarge costs over $30/hour while stopped, multiplied by the time it takes to diagnose the root cause manually. PowerTrace shows the causality in seconds.
 
 ---
 
 ## 60-Second Demo
 
-No AWS credentials or Docker required:
+Works from a clean clone. No AWS credentials required; Docker only for the Grafana stack.
 
 ```bash
 git clone https://github.com/hitkall/powertrace
 cd powertrace
-pip3 install -r requirements.txt
 
-# correlation engine on bundled sample data
-python3 main.py simulate
-python3 main.py simulate --output json
-python3 main.py correlate \
-  --events   sample_data/events.json \
-  --traces   sample_data/traces.json \
-  --topology sample_data/topology.json
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
 
-# preview OTLP payloads without a running backend
-python3 export_to_otel.py --dry-run
+# Correlation engine on bundled sample data
+python main.py simulate
+python main.py simulate --output json
+python main.py correlate --events sample_data/events.json --traces sample_data/traces.json --topology sample_data/topology.json
+
+# Preview OTLP payloads without a running backend
+python export_to_otel.py --dry-run
 ```
 
-Sample output from `main.py simulate`:
+Sample output from `python main.py simulate`:
 
 ```
 INCIDENT DETECTED — llama-inference-api (confidence: 89%)
@@ -86,30 +99,23 @@ IMPACT
   Root cause: PDU voltage sag on PDU-B-rack-14
 ```
 
-**With the Grafana stack:**
+**With the Grafana stack (Docker required):**
 
 ```bash
-docker compose up -d   # Grafana, Prometheus, Tempo, OTel Collector
-python3 main.py simulate
-python3 export_to_otel.py
+docker compose up -d        # Grafana, Prometheus, Tempo, OTel Collector
+python export_to_otel.py    # push metrics, traces, logs, and annotations
+docker compose down         # tear down when finished
 ```
 
-→ Grafana: http://localhost:3000  (admin / powertrace)
-→ Prometheus: http://localhost:9090
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Grafana dashboard | http://localhost:3000/d/powertrace-main | admin / powertrace |
+| Grafana home | http://localhost:3000 | admin / powertrace |
+| Prometheus | http://localhost:9090 | — |
 
-See [docs/DEMO.md](docs/DEMO.md) for a full walkthrough including the live AWS data path.
+The provisioned **PowerTrace — Infrastructure Correlation Dashboard** shows P99 latency and error-rate time series with the incident spike, Grafana annotations marking each infrastructure event at its exact timestamp, and the correlated incident trace in Tempo.
 
----
-
-## The Problem
-
-When an AI training job slows down or crashes, two separate teams start investigating simultaneously.
-
-The **infrastructure team** is looking at CloudWatch, AWS Health Events, or physical power dashboards. The **SRE / platform team** is looking at APM traces, error rates, and GPU metrics. Neither team can see what the other sees.
-
-A power fluctuation that caused a GPU to thermal throttle, which caused a training job to lose a checkpoint, gets discovered in a post-mortem — not in real time.
-
-For teams running large GPU clusters on AWS, this is expensive. A single interrupted training run on a p4d.24xlarge costs over $30/hour while stopped; multiply that by the time it takes to diagnose the root cause manually. PowerTrace shows the causality in seconds.
+See [docs/DEMO.md](docs/DEMO.md) for the full walkthrough, including the live AWS data path.
 
 ---
 
@@ -134,38 +140,10 @@ sample_data/*.json ────────────►  Engine (correlate.py
 
 ---
 
-## Quickstart
-
-```bash
-git clone https://github.com/hitkall/powertrace
-cd powertrace
-pip install -r requirements.txt
-
-# Run the demo against bundled sample data
-python3 main.py simulate
-
-# With GPU cost estimate
-python3 main.py simulate --gpu-rate 32.77
-
-# Against your own files
-python3 main.py correlate \
-  --events   sample_data/events.json \
-  --traces   sample_data/traces.json \
-  --topology sample_data/topology.json
-
-# Poll a live EC2 instance (requires AWS credentials + IAM policy)
-python3 main.py run \
-  --instance i-0abc123def456 \
-  --region   us-east-1 \
-  --service  llama-inference-api
-```
-
----
-
 ## Configuration
 
 ```bash
-python3 main.py correlate \
+python main.py correlate \
   --events     events.json \
   --traces     traces.json \
   --topology   topology.json \
@@ -196,7 +174,7 @@ See [docs/DEMO.md](docs/DEMO.md#option-c-live-aws-data-requires-aws-account) for
 
 The IAM policies required are in `receivers/iam_policy_aws_health.json` and `receivers/iam_policy_cloudwatch.json`.
 
-> **Note:** AWS Health API requires Business or Enterprise Support plan. Use `python3 main.py simulate` for a full demo without credentials.
+> **Note:** AWS Health API requires Business or Enterprise Support plan. Use `python main.py simulate` for a full demo without credentials.
 
 ---
 
@@ -215,7 +193,7 @@ See [docs/DESIGN.md](docs/DESIGN.md) for a detailed walkthrough of the algorithm
 
 ---
 
-## Supported Signal Sources
+## Signal Sources
 
 | Source | Protocol / API | Status |
 |--------|---------------|--------|
@@ -230,20 +208,34 @@ See [docs/DESIGN.md](docs/DESIGN.md) for a detailed walkthrough of the algorithm
 
 ---
 
+## Documentation & Examples
+
+| Resource | Description |
+|----------|-------------|
+| [docs/DEMO.md](docs/DEMO.md) | Full demo walkthrough: CLI-only, Docker stack, and live AWS paths |
+| [docs/DESIGN.md](docs/DESIGN.md) | Correlation engine internals: schemas, scoring model, limitations |
+| [docs/OTEL_POSITIONING.md](docs/OTEL_POSITIONING.md) | Honest OTel positioning and the path to a native Collector component |
+| [examples/sample_report.md](examples/sample_report.md) | Markdown incident report generated from the sample data |
+| [examples/sample_report.json](examples/sample_report.json) | JSON incident report generated from the sample data |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup and contribution guidelines |
+
+---
+
 ## Development
 
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt
 
-make test          # run pytest
-make lint          # run ruff
-make simulate      # python3 main.py simulate
-make dry-run-export  # python3 export_to_otel.py --dry-run
-make demo-up       # docker compose + data export
-make demo-down     # docker compose down
+make test            # pytest (63 tests)
+make lint            # ruff check .
+make simulate        # python main.py simulate
+make dry-run-export  # python export_to_otel.py --dry-run
+make demo-up         # docker compose stack + data export
+make demo-down       # docker compose down
+make clean           # remove caches
 ```
 
-CI runs on Python 3.11 and 3.12 on every push and pull request. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
+CI runs on Python 3.11 and 3.12 on every push and pull request: lint, tests, and smoke runs of the simulate and export commands. See [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ---
 
@@ -254,6 +246,7 @@ CI runs on Python 3.11 and 3.12 on every push and pull request. See [.github/wor
 - **Sampling gaps:** Short infrastructure events may fall between sampled trace spans at low sampling rates.
 - **Cloud physical layer:** For cloud deployments, PowerTrace cannot see below the hypervisor. AWS Health Events are coarse-grained and may lag real hardware events.
 - **Batch-only:** No streaming or incremental mode. The engine processes all input data in one pass.
+- **No production validation yet:** The correlation model has been validated on simulated incidents, not on a real GPU cluster.
 
 ---
 
@@ -261,22 +254,25 @@ CI runs on Python 3.11 and 3.12 on every push and pull request. See [.github/wor
 
 **Done (v0.1.0)**
 - Correlation engine with Pydantic validation, topology resolution, confidence scoring
-- AWS Health Events receiver
-- CloudWatch metrics receiver
+- AWS Health Events receiver prototype
+- CloudWatch metrics receiver prototype
 - OTLP export (metrics, traces, logs) with Grafana annotations
 - Docker Compose demo stack (Grafana, Prometheus, Tempo, OTel Collector)
 - Test suite (63 tests), CI (GitHub Actions), ruff linting
 
 **Prototype / Active Development**
 - Improve AWS receiver topology enrichment from `describe_affected_entities`
-- NVML receiver for live GPU telemetry
+- Harden the local Grafana demo and sample report generation
 
 **Planned**
-- OTel Collector receiver/connector in Go (see [docs/OTEL_POSITIONING.md](docs/OTEL_POSITIONING.md))
-- Redfish BMC receiver
-- PDU SNMP receiver
+- OTel Collector receiver / processor / connector in Go (see [docs/OTEL_POSITIONING.md](docs/OTEL_POSITIONING.md))
+- NVML / DCGM live GPU receiver
+- SNMP / Redfish receiver
+- RAPL support
+- Azure / GCP health event receivers
 - Proposed OTel semantic conventions for physical infrastructure attributes
-- Streaming/incremental correlation mode
+- Streaming / incremental correlation mode
+- Production validation on real GPU clusters
 
 ---
 
@@ -298,4 +294,4 @@ If you run AI infrastructure — on AWS GPU instances, in a colo, or on-prem —
 
 ## License
 
-Apache 2.0
+[Apache 2.0](LICENSE)
