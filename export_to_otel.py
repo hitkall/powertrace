@@ -27,11 +27,9 @@ import importlib.util
 import json
 import logging
 import sys
-import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 import requests
 
@@ -376,15 +374,15 @@ def _build_logs_payload(events: list, shift: float) -> dict:
             "severityNumber":       severity_number_map.get(sev, 9),
             "severityText":         sev.upper(),
             "body": {
-                "stringValue": f"[{evt.get('event_type', 'unknown')}] {evt.get('device_id', '')} — {evt.get('description', '')}"
+                "stringValue": f"[{evt.get('type', 'unknown')}] {evt.get('device_id', '')} — {evt.get('raw_message', '')}"
             },
             "attributes": [
                 {"key": "event.id",      "value": {"stringValue": evt.get("id", "")}},
                 {"key": "device_id",     "value": {"stringValue": evt.get("device_id", "")}},
                 {"key": "source",        "value": {"stringValue": evt.get("source", "")}},
                 {"key": "severity",      "value": {"stringValue": sev}},
-                {"key": "event_type",    "value": {"stringValue": evt.get("event_type", "")}},
-                {"key": "region",        "value": {"stringValue": evt.get("region", "")}},
+                {"key": "event_type",    "value": {"stringValue": evt.get("type", "")}},
+                {"key": "region",        "value": {"stringValue": evt.get("metadata", {}).get("region", "")}},
             ],
         })
 
@@ -426,11 +424,10 @@ def _push_grafana_annotations(
         ts_ms = int(shifted_dt.timestamp() * 1000)
 
         sev   = evt.get("severity", "low")
-        color = _SEVERITY_COLORS.get(sev, "blue")
-        tags  = [f"severity:{sev}", "powertrace", evt.get("event_type") or evt.get("type", "unknown")]
+        tags  = [f"severity:{sev}", "powertrace", evt.get("type", "unknown")]
 
         text  = (
-            f"<b>[{sev.upper()}]</b> {evt.get('event_type', '?')} "
+            f"<b>[{sev.upper()}]</b> {evt.get('type', '?')} "
             f"on <code>{evt.get('device_id', '?')}</code><br>"
             f"source: {evt.get('source', '?')}"
         )
@@ -669,7 +666,7 @@ def main() -> None:
         print(f"  Errors              : {counters['errors']}  ← check stack is running")
     print("─" * 52)
     print(f"  Grafana   → {args.grafana_url}  (admin / powertrace)")
-    print(f"  Prometheus→ http://localhost:9090")
+    print("  Prometheus→ http://localhost:9090")
     print()
 
 

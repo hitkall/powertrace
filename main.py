@@ -181,9 +181,12 @@ def run_correlation_engine(
     }
 
     missing = []
-    if not events:               missing.append("events")
-    if not traces.service_metrics: missing.append("service metrics")
-    if not topology_maps:        missing.append("topology mappings")
+    if not events:
+        missing.append("events")
+    if not traces.service_metrics:
+        missing.append("service metrics")
+    if not topology_maps:
+        missing.append("topology mappings")
     if missing:
         raise ValueError(f"No valid data found in: {', '.join(missing)}")
 

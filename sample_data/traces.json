@@ -2,6 +2,66 @@
   "service_metrics": [
     {
       "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:12:00.000Z",
+      "p50_latency_ms": 213,
+      "p95_latency_ms": 389,
+      "p99_latency_ms": 527,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 142,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:16:00.000Z",
+      "p50_latency_ms": 214,
+      "p95_latency_ms": 390,
+      "p99_latency_ms": 529,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 140,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:21:50.000Z",
+      "p50_latency_ms": 212,
+      "p95_latency_ms": 388,
+      "p99_latency_ms": 528,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 141,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:22:20.000Z",
+      "p50_latency_ms": 216,
+      "p95_latency_ms": 392,
+      "p99_latency_ms": 531,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 139,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:22:50.000Z",
+      "p50_latency_ms": 214,
+      "p95_latency_ms": 391,
+      "p99_latency_ms": 529,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 140,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
+      "timestamp": "2024-01-15T14:23:20.000Z",
+      "p50_latency_ms": 215,
+      "p95_latency_ms": 390,
+      "p99_latency_ms": 530,
+      "error_rate_percent": 0.1,
+      "throughput_rps": 140,
+      "node_id": "i-0abc123def456"
+    },
+    {
+      "service_name": "llama-inference-api",
       "timestamp": "2024-01-15T14:31:50.000Z",
       "p50_latency_ms": 215,
       "p95_latency_ms": 390,

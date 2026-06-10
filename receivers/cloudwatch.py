@@ -207,9 +207,10 @@ def datapoints_to_service_metrics(
     def _lookup(name: str) -> dict[datetime, float]:
         return {pt["timestamp"]: pt["value"] for pt in metric_data.get(name, [])}
 
-    cpu_by_ts          = _lookup("CPUUtilization")
-    status_by_ts       = _lookup("StatusCheckFailed")
-    net_in_by_ts       = _lookup("NetworkIn")
+    status_by_ts = _lookup("StatusCheckFailed")
+    net_in_by_ts = _lookup("NetworkIn")
+    # CPUUtilization data is available from _lookup("CPUUtilization") but
+    # ServiceMetric has no cpu field yet — it flows through events instead.
 
     results: list[dict] = []
     for ts in sorted(all_timestamps):

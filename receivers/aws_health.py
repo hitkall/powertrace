@@ -18,7 +18,6 @@ import logging
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
@@ -189,10 +188,8 @@ def _extract_affected_instances(detail: dict) -> list[str]:
     AWS populates these in describe_event_details → entityList.
     Falls back to an empty list if unavailable.
     """
-    entities = detail.get("eventDescription", {})
     # describe_event_details doesn't return entities directly — those come from
-    # describe_affected_entities. We use the structured detail when available.
-    # For now, return empty so callers use a fallback device_id.
+    # describe_affected_entities. Return empty so callers use a fallback device_id.
     return []
 
 

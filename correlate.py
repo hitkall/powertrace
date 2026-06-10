@@ -5,12 +5,12 @@ PowerTrace correlate.py — correlates physical infrastructure events with OTel 
 
 import argparse
 import json
-import sys
 import logging
+import sys
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Tuple, Literal
+from typing import Dict, List, Literal, Optional, Tuple
 
-from pydantic import BaseModel, field_validator, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 
@@ -114,7 +114,7 @@ class InfraEvent(BaseModel):
     raw_message: str
     # Case 9: accept any dict content, never require specific keys; default {} handles
     # missing or null metadata without failing the whole record.
-    metadata: dict = {}
+    metadata: dict = Field(default_factory=dict)
 
     @field_validator("timestamp", mode="before")
     @classmethod
@@ -150,7 +150,7 @@ class Span(BaseModel):
     start_time: datetime
     duration_ms: float
     status: str
-    attributes: dict = {}
+    attributes: dict = Field(default_factory=dict)
 
     @field_validator("start_time", mode="before")
     @classmethod
@@ -160,7 +160,7 @@ class Span(BaseModel):
 
 class TracesFile(BaseModel):
     service_metrics: List[ServiceMetric]
-    spans: List[Span] = []
+    spans: List[Span] = Field(default_factory=list)
 
 
 class TopologyMapping(BaseModel):
@@ -219,8 +219,8 @@ class Incident(BaseModel):
     affected_services: List[str]
     causal_chain: List[CausalChainEvent]
     impact: ImpactSummary
-    warnings: List[str] = []
-    unmapped_devices: List[str] = []
+    warnings: List[str] = Field(default_factory=list)
+    unmapped_devices: List[str] = Field(default_factory=list)
     # Case 4: always emitted; consumers use this flag rather than confidence being hidden
     low_confidence: bool = False
 
@@ -559,8 +559,7 @@ def _edge_confidence(
             score -= 0.25
             indirect_causality = True
         elif inter_gap > 10:
-            score -= 0.05
-        elif inter_gap > 30:
+            # 10 < inter_gap ≤ LONG_LAG_SECONDS: moderate penalty
             score -= 0.10
         # ≤ 10s: no penalty (events are closely coupled)
 
@@ -713,10 +712,7 @@ def build_causal_chain(
         round((peak_metric.p99_latency_ms - p99_base) / p99_base * 100, 1)
         if p99_base > 0 else 0.0
     )
-    tput_change = (
-        round((peak_metric.throughput_rps - tput_base) / tput_base * 100, 1)
-        if tput_base > 0 else 0.0
-    )
+
 
     # First-anomaly point values (used in terminal display; show when it broke, not worst)
     p99_first_change = (
@@ -813,10 +809,7 @@ def render_timeline(report: CorrelationReport, min_confidence: float) -> str:
             "",
         ]
 
-        # Build a lookup so "caused by" lines can show device_id instead of event_id
-        event_to_device: Dict[str, str] = {
-            ce.event_id: ce.device_id for ce in inc.causal_chain
-        }
+
 
         lines += ["CAUSAL CHAIN"]
         for ce in inc.causal_chain:
@@ -854,7 +847,7 @@ def render_timeline(report: CorrelationReport, min_confidence: float) -> str:
             lines.append(f"  Est. cost: ${imp.estimated_cost_impact_usd:,.0f}")
         else:
             # Case 10: explicit null with guidance
-            lines.append(f"  Est. cost: null  (pass --gpu-rate USD_PER_HR to compute)")
+            lines.append("  Est. cost: null  (pass --gpu-rate USD_PER_HR to compute)")
         lines.append(f"  Root cause: {root_desc}")
         lines.append("")
 
@@ -980,8 +973,8 @@ def render_markdown(report: CorrelationReport, min_confidence: float) -> str:
             lines.append(f"- **Estimated cost impact:** ${imp.estimated_cost_impact_usd:.2f}")
         else:
             lines.append(
-                f"- **Estimated cost impact:** `null` "
-                f"(pass `--gpu-rate USD_PER_HR` to compute)"
+                "- **Estimated cost impact:** `null` "
+                "(pass `--gpu-rate USD_PER_HR` to compute)"
             )
 
         if inc.warnings:
